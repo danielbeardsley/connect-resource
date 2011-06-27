@@ -105,8 +105,11 @@ function controllerCapturer(method_list){
 
 function setupControllerFor(resourceName, actions) {
 	var controller = controllerCapturer(actions);
+	var router = CR.router();
+	router.resource(resourceName, controller);
+	
 	return {
-		middleware: CR.resource(resourceName, controller),
+		middleware: router.middleware,
 		controller: controller
 	};
 }
