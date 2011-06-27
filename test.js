@@ -6,82 +6,69 @@ vows.describe('connect-resource').addBatch({
 	'A Resource with no methods': {
 		topic: setupControllerFor('things', []),
 		
-		'should call next() for all url paths': testPassesToNextForPaths([
-			'get /',
-			'get /blah',
-			'get /things/1',
-			'get /things/1/edit',
-			'post /',
-			'pust /things/1',
-			'delete /things/1'
-		])
+		'should call next() for all url paths': testPathActionMappings({
+			'get /'                : null,
+			'get /blah'            : null,
+			'get /things/1'        : null,
+			'get /things/1/edit'   : null,
+			'post /'               : null,
+			'pust /things/1'       : null,
+			'delete /things/1'     : null
+		})
 	},
 	
-	'A Resource with just the index method': {
-		topic: setupControllerFor('things', ['index']),
+	'A Resource with the default set of methods': {
+		topic: setupControllerFor('things', "index show new create update delete".split(' ')),
 		
-		'should pass the request to the controller': testPassesToControllerForPaths({
-			'get /things': 'index'
+		'should send requests to the right places': testPathActionMappings({
+			'get /things'                : 'index',
+			'get /things/blah'           : null,
+			
+			'get /things/'               : null,
+			'put /things'                : null,
+			'post /things'               : null,
+			'delete /things'             : null,
+			
+			'put /things/blah'           : null,
+			'put /things/blah'           : null,
 		})
 	}	
 }).export(module);
 
-function testPassesToNextForPaths(paths){
-	function passesToNextFor(path){
-		var parts = path.split(' '),
-		method = parts[0].toUpperCase();
-		path   = parts[1];
-		
-		return function(setup){
-			var passed = [];
-			setup.middleware({url:path, method:method}, {}, function(){
-				passed.push(path);
-			});
-			
-			// assert the request was NOT passed to the controller
-			assert.isEmpty(setup.controller.captured);
-			
-			// assert the request was passed on to next()
-			assert.deepEqual(passed, [path]);
-		}
-	}
-	
-	var context = {
-		topic: function(middleware){
-			return middleware;
-		}
-	}
-	
-	paths.forEach(function(path){
-		context['should call next() for ' + path] = passesToNextFor(path)
-	});
-	
-	return context;
-}
 
-// Returns a Context that tests if the request is passed to a controller for
-// each of the listed mappings.
+// Returns a Context that tests the parent topic to ensure requests are routed
+// as specified by `mappings`
 // mappings = {
-//	'get /blah': 'action_name'
+//	'get /blah'           : 'action_name'
+//	'get /not_a_resource' : null  // tests if the request is passed to next()
 // }
 //
-function testPassesToControllerForPaths(mappings){
-	function passesToControllerFor(path, controllerAction){
+function testPathActionMappings(mappings){
+	function passesRequestTo(path, action){
 		var parts = path.split(' '),
 		method = parts[0].toUpperCase();
 		path   = parts[1];
 		
 		return function(setup){
 			var passed = [];
+			setup.controller.captured = [];
 			setup.middleware({url:path, method:method}, {}, function(){
 				passed.push(path);
 			});
 			
-			// assert the request was passed to the correct controller action
-			assert.deepEqual(setup.controller.captured, [controllerAction]);
-			
-			// assert the request was NOT passed on to next()
-			assert.isEmpty(passed);
+			if(action){
+				// assert the request was passed to the correct controller action
+				assert.deepEqual(setup.controller.captured, [action]);
+				
+				// assert the request was NOT passed on to next()
+				assert.isEmpty(passed);
+			} else {
+				// assert the request was NOT passed to the controller
+				assert.isEmpty(setup.controller.captured);
+				
+				// assert the request was passed on to next()
+				assert.deepEqual(passed, [path]);
+			}
 		}
 	}
 	
@@ -92,9 +79,16 @@ function testPassesToControllerForPaths(mappings){
 	}
 	
 	for(var path in mappings){
-		var action = mappings[path]; 
-		context['should pass the request "' + path +'" to the controller action: ' + action] =
-			passesToControllerFor(path, action);
+		var action = mappings[path],
+		vow_function = passesRequestTo(path, action),
+		vow_name;
+		
+		if(action == null)
+			vow_name = 'should pass the request "' + path +'" to next()';
+		else
+			vow_name = 'should pass the request "' + path +'" to the controller action: ' + action;
+		
+		context[vow_name] = vow_function;
 	}
 	
 	return context;
