@@ -1,0 +1,13 @@
+{
+  "name": "connect-resource",
+  "description": "creates controller-like connect.js middleware that routes the standard set of resource routes: index, show, updatedelete, ...",
+  "version": "0.0.0",
+  "repository": {},
+  "author": "Daniel Beardsley <daniel.beardsley@gmail.com> (www.danielbeardsley.com)",
+  "directories": {
+    "lib": "."
+  },
+  "engines": {
+    "node": "*"
+  }
+}
