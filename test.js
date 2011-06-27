@@ -33,11 +33,16 @@ function testPassesToNextForPaths(paths){
 		path   = parts[1];
 		
 		return function(setup){
-			var nextCalled = false;
+			var passed = [];
 			setup.middleware({url:path, method:method}, {}, function(){
-				nextCalled = true;
+				passed.push(path);
 			});
-			assert.isTrue(nextCalled);
+			
+			// assert the request was NOT passed to the controller
+			assert.isEmpty(setup.controller.captured);
+			
+			// assert the request was passed on to next()
+			assert.deepEqual(passed, [path]);
 		}
 	}
 	
@@ -59,6 +64,7 @@ function testPassesToNextForPaths(paths){
 // mappings = {
 //	'get /blah': 'action_name'
 // }
+//
 function testPassesToControllerForPaths(mappings){
 	function passesToControllerFor(path, controllerAction){
 		var parts = path.split(' '),
@@ -66,10 +72,16 @@ function testPassesToControllerForPaths(mappings){
 		path   = parts[1];
 		
 		return function(setup){
+			var passed = [];
 			setup.middleware({url:path, method:method}, {}, function(){
-				setup.controller.passed.push(path);
+				passed.push(path);
 			});
-			assert.include(setup.controller.captured, controllerAction);
+			
+			// assert the request was passed to the correct controller action
+			assert.deepEqual(setup.controller.captured, [controllerAction]);
+			
+			// assert the request was NOT passed on to next()
+			assert.isEmpty(passed);
 		}
 	}
 	
@@ -90,10 +102,10 @@ function testPassesToControllerForPaths(mappings){
 
 // Returns an object with a function stored in each of the properties specified.
 // A list of which functions have been called is kept in .captured
-function controllerCapturer(method_list){
+//
+function capturingController(method_list){
 	var controller = {
-		captured: [],
-		passed: []
+		captured: []
 	};
 	method_list.forEach(function(method){
 		controller[method] = function(){
@@ -103,8 +115,11 @@ function controllerCapturer(method_list){
 	return controller;
 }
 
+// Creates a connect-resource router and adds a resource using a capturing
+// controller which exposes the specified actions
+//
 function setupControllerFor(resourceName, actions) {
-	var controller = controllerCapturer(actions);
+	var controller = capturingController(actions);
 	var router = CR.router();
 	router.resource(resourceName, controller);
 	
