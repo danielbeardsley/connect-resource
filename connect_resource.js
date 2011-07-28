@@ -13,14 +13,20 @@ Router.prototype = {
 		return function(req, res, next){
 			// "/resource_name/blah"
 			var first_part = consumeUrlPart(req),
+			action = req._parts[0];
 			partsLeft = req._parts.length;
 			controller = self.resources[first_part];
 			
 			if(controller){
-				if(req.method == 'GET' && partsLeft == 0 && controller.index)
-					controller.index();
-				else
-					next();
+				var method = req.method;
+				switch(req.method){
+					case 'GET':
+						if(action == null && controller.index)
+							return controller.index.apply(null, arguments);
+						else if(action == null && controller.index)
+						break;
+				}
+				next();
 			} else
 				next();
 			
