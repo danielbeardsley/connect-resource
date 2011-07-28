@@ -1,3 +1,6 @@
+## Notice ##
+This project is in the early stages, feel free to contribute.
+
 ## Connect-Resource ##
 A simple middleware for connect or express that enables easy and lightweight
 resource based routing.
@@ -9,11 +12,11 @@ resource based routing.
 		
 		var controller = {
 			index: function(req, res, next){
-				// ... respond to index action
+				// ... respond to index action at url "GET prefix/"
 			},
 			
 			show: function(req, res, next){
-				// ... respond to show action
+				// ... respond to show action  at url "GET prefix/id"
 			}
 			
 			// ...
