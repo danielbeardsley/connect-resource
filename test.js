@@ -22,6 +22,10 @@ vows.describe('connect-resource').addBatch({
 		
 		'should send requests to the right places': testPathActionMappings({
 			'get /things'                : 'index',
+			'get /things/1'              : 'show',
+		}),
+
+		'should pass on unimplemented actions': testPathActionMappings({
 			'get /things/blah'           : null,
 			
 			'get /things/'               : null,
@@ -30,7 +34,7 @@ vows.describe('connect-resource').addBatch({
 			'delete /things'             : null,
 			
 			'put /things/blah'           : null,
-			'put /things/blah'           : null,
+			'put /things/other'          : null
 		})
 	}	
 }).export(module);
