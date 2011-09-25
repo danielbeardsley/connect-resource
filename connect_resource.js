@@ -13,7 +13,7 @@ Router.prototype = {
 		return function(req, res, next){
 			// "/resource_name/blah"
 			var first_part = consumeUrlPart(req),
-			action = req._parts[0];
+			second_part = req._parts[0];
 			partsLeft = req._parts.length;
 			controller = self.resources[first_part];
 			
@@ -21,9 +21,22 @@ Router.prototype = {
 				var method = req.method;
 				switch(req.method){
 					case 'GET':
-						if(action == null && controller.index)
+						if(second_part == null && controller.index)
 							return controller.index.apply(null, arguments);
-						else if(action == null && controller.index)
+						else if(controller.show)
+							return controller.show.apply(null, arguments);
+						break;
+					case 'PUT':
+						if(controller.create)
+							return controller.create.apply(null, arguments);
+						break;
+					case 'DELETE':
+						if(controller['delete'])
+							return controller['delete'].apply(null, arguments);
+						break;
+					case 'POST':
+						if(controller.update)
+							return controller.update.apply(null, arguments);
 						break;
 				}
 				next();

@@ -23,9 +23,12 @@ vows.describe('connect-resource').addBatch({
 		'should send requests to the right places': testPathActionMappings({
 			'get /things'                : 'index',
 			'get /things/1'              : 'show',
+			'put /things'                : 'create',
+			'post   /things/2'           : 'update',
+			'delete /things/3'           : 'delete'
 		}),
 
-		'should pass on unimplemented actions': testPathActionMappings({
+		'should call next() for unimplemented actions': testPathActionMappings({
 			'get /things/blah'           : null,
 			
 			'get /things/'               : null,
@@ -49,7 +52,7 @@ vows.describe('connect-resource').addBatch({
 //
 function testPathActionMappings(mappings){
 	function passesRequestTo(path, action){
-		var parts = path.split(' '),
+		var parts = path.split(/\s+/),
 		method = parts[0].toUpperCase();
 		path   = parts[1];
 		

@@ -3,7 +3,7 @@ This project is in the early stages, feel free to contribute.
 
 ## Connect-Resource ##
 A simple middleware for connect or express that enables easy and lightweight
-resource based routing.
+heirachical resource based routing.
 
 ### Usage ###
 		var connect_resource = require('connect-resource'),
